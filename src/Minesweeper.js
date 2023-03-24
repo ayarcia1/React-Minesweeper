@@ -1,84 +1,123 @@
-var grid = document.getElementById("grid");
-var testMode = false; //Turn this variable to true to see where the mines are
-generateGrid();
+// Set up game board
+const boardSize = 10;
+const mineCount = 10;
+let gameBoard = [];
+let mineLocations = [];
 
-function generateGrid() {
-  //generate 10 by 10 grid
-  grid.innerHTML="";
-  for (var i=0; i<10; i++) {
-    row = grid.insertRow(i);
-    for (var j=0; j<10; j++) {
-      cell = row.insertCell(j);
-      cell.onclick = function() { clickCell(this); };
-      var mine = document.createAttribute("data-mine");       
-      mine.value = "false";             
-      cell.setAttributeNode(mine);
-    }
-  }
-  addMines();
-}
-
-function addMines() {
-  //Add mines randomly
-  for (var i=0; i<20; i++) {
-    var row = Math.floor(Math.random() * 10);
-    var col = Math.floor(Math.random() * 10);
-    var cell = grid.rows[row].cells[col];
-    cell.setAttribute("data-mine","true");
-    if (testMode) cell.innerHTML="X";
-  }
-}
-
-function revealMines() {
-    //Highlight all mines in red
-    for (var i=0; i<10; i++) {
-      for(var j=0; j<10; j++) {
-        var cell = grid.rows[i].cells[j];
-        if (cell.getAttribute("data-mine")=="true") cell.className="mine";
-      }
-    }
-}
-
-function checkLevelCompletion() {
-  var levelComplete = true;
-    for (var i=0; i<10; i++) {
-      for(var j=0; j<10; j++) {
-        if ((grid.rows[i].cells[j].getAttribute("data-mine")=="false") && (grid.rows[i].cells[j].innerHTML=="")) levelComplete=false;
-      }
-  }
-  if (levelComplete) {
-    alert("You Win!");
-    revealMines();
-  }
-}
-
-function clickCell(cell) {
-  //Check if the end-user clicked on a mine
-  if (cell.getAttribute("data-mine")=="true") {
-    revealMines();
-    alert("Game Over");
-  } else {
-    cell.className="clicked";
-    //Count and display the number of adjacent mines
-    var mineCount=0;
-    var cellRow = cell.parentNode.rowIndex;
-    var cellCol = cell.cellIndex;
-    //alert(cellRow + " " + cellCol);
-    for (var i=Math.max(cellRow-1,0); i<=Math.min(cellRow+1,9); i++) {
-      for(var j=Math.max(cellCol-1,0); j<=Math.min(cellCol+1,9); j++) {
-        if (grid.rows[i].cells[j].getAttribute("data-mine")=="true") mineCount++;
-      }
-    }
-    cell.innerHTML=mineCount;
-    if (mineCount==0) { 
-      //Reveal all adjacent cells as they do not have a mine
-      for (var i=Math.max(cellRow-1,0); i<=Math.min(cellRow+1,9); i++) {
-        for(var j=Math.max(cellCol-1,0); j<=Math.min(cellCol+1,9); j++) {
-          //Recursive Call
-          if (grid.rows[i].cells[j].innerHTML=="") clickCell(grid.rows[i].cells[j]);
+function createBoard() {
+    for (let i = 0; i < boardSize; i++) {
+        gameBoard[i] = [];
+        for (let j = 0; j < boardSize; j++) {
+            gameBoard[i][j] = 0;
         }
-      }
     }
-    checkLevelCompletion();
+    placeMines();
+    countAdjacentMines();
+    renderBoard();
+}
+
+function placeMines() {
+    while (mineLocations.length < mineCount) {
+        let row = Math.floor(Math.random() * boardSize);
+        let col = Math.floor(Math.random() * boardSize);
+        if (gameBoard[row][col] !== 'mine') {
+            gameBoard[row][col] = 'mine';
+            mineLocations.push([row, col]);
+        }
+    }
+}
+
+function countAdjacentMines() {
+    for (let i = 0; i < mineLocations.length; i++) {
+        let row = mineLocations[i][0];
+        let col = mineLocations[i][1];
+        for (let j = row - 1; j <= row + 1; j++) {
+            for (let k = col - 1; k <= col + 1; k++) {
+                if (j >= 0 && j < boardSize && k >= 0 && k < boardSize && gameBoard[j][k] !== 'mine') {
+                    gameBoard[j][k] += 1;
+                }
+            }
+        }
+    }
+}
+
+function renderBoard() {
+  const gameBoardEl = document.getElementById('gameBoard');
+  gameBoardEl.innerHTML = '';
+  for (let i = 0; i < boardSize; i++) {
+      const row = document.createElement('div');
+      row.classList.add('row');
+      for (let j = 0; j < boardSize; j++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.dataset.row = i;
+          cell.dataset.col = j;
+          row.appendChild(cell);
+      }
+      gameBoardEl.appendChild(row);
   }
 }
+
+function revealAdjacentCells(row, col) {
+  for (let i = row - 1; i <= row + 1; i++) {
+      for (let j = col - 1; j <= col + 1; j++) {
+          if (i >= 0 && i < boardSize && j >= 0 && j < boardSize) {
+              const cell = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+              if (!cell.classList.contains('clicked')) {
+                  cell.classList.add('clicked');
+                  cell.textContent = gameBoard[i][j];
+                  if (gameBoard[i][j] === 0) {
+                      revealAdjacentCells(i, j);
+                  }
+              }
+          }
+      }
+  }
+}
+
+function checkWinCondition() {
+  for (let row = 0; row < boardSize; row++) {
+    for (let col = 0; col < boardSize; col++) {
+      const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+      if (gameBoard[row][col] !== 'mine' && !cell.classList.contains('revealed')) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
+function resetBoard() {
+  // Clear game board and mine locations
+  gameBoard = [];
+  mineLocations = [];
+  
+  // Recreate game board
+  createBoard();
+}
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', createBoard);
+
+document.getElementById('gameBoard').addEventListener('click', function(event) {
+    if (event.target.classList.contains('cell')) {
+        const row = parseInt(event.target.dataset.row);
+        const col = parseInt(event.target.dataset.col);
+        if(checkWinCondition()){
+          alert('You win!');
+          revealEmptyCells(row, col);
+        }
+        if (gameBoard[row][col] === 'mine') {
+            event.target.classList.add('mine');
+            alert('Game over!');
+            revealEmptyCells(row, col);
+        } else {
+            event.target.classList.add('clicked');
+            event.target.textContent = gameBoard[row][col];
+            if (gameBoard[row][col] === 0) {
+                revealAdjacentCells(row, col);
+            }
+        }
+    }
+});
