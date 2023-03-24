@@ -79,7 +79,7 @@ function checkWinCondition() {
   for (let row = 0; row < boardSize; row++) {
     for (let col = 0; col < boardSize; col++) {
       const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-      if (gameBoard[row][col] !== 'mine' && !cell.classList.contains('revealed')) {
+      if (gameBoard[row][col] !== 'mine' && !cell.classList.contains('clicked')) {
         return false;
       }
     }
@@ -104,10 +104,6 @@ document.getElementById('gameBoard').addEventListener('click', function(event) {
     if (event.target.classList.contains('cell')) {
         const row = parseInt(event.target.dataset.row);
         const col = parseInt(event.target.dataset.col);
-        if(checkWinCondition()){
-          alert('You win!');
-          revealEmptyCells(row, col);
-        }
         if (gameBoard[row][col] === 'mine') {
             event.target.classList.add('mine');
             alert('Game over!');
@@ -117,6 +113,10 @@ document.getElementById('gameBoard').addEventListener('click', function(event) {
             event.target.textContent = gameBoard[row][col];
             if (gameBoard[row][col] === 0) {
                 revealAdjacentCells(row, col);
+            }
+            if(checkWinCondition()){
+                alert('You win!');
+                revealEmptyCells(row, col);
             }
         }
     }
