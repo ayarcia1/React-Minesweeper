@@ -9,13 +9,29 @@ h1 {
   text-align: center;
   font-size: 14pt;
   font-weight: normal;
+  user-select: none;
 }
+
+hr {
+  width:20%;
+  margin:0 auto;
+}
+
+br {
+  user-select: none;
+}
+
+button {
+  user-select: none;
+}
+
 
 #gameBoard {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  user-select: none;
 }
 
 .row {
