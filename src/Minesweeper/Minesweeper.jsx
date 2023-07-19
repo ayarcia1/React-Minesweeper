@@ -133,7 +133,9 @@ const Minesweeper = () => {
   const resetBoard = () => {
     gameBoard = [];
     mineLocations = [];
-    gameOver--;
+    if (gameOver > 0) {
+      gameOver -= 1;
+    }
     createBoard();
   };
 
@@ -145,7 +147,7 @@ const Minesweeper = () => {
         event.target.classList.add('mine');
         alert('Game over!');
         revealEmptyCells();
-        gameOver++;
+        gameOver += 1;
       } else {
         event.target.classList.add('clicked');
         if (gameBoard[row][col] !== 0) {
@@ -157,7 +159,7 @@ const Minesweeper = () => {
         if (checkWinCondition()) {
           alert('You win!');
           revealEmptyCells();
-          gameOver++;
+          gameOver += 1;
         }
       }
     }
