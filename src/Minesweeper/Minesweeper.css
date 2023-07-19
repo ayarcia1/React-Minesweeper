@@ -1,10 +1,10 @@
-BODY {
+body {
   background: black;
   color: #DDDDDD;
   font-family: courier new;
   text-align: center;
 }
-  
+
 h1 {
   text-align: center;
   font-size: 14pt;
@@ -24,7 +24,6 @@ br {
 button {
   user-select: none;
 }
-
 
 #gameBoard {
   display: flex;
